@@ -1,12 +1,14 @@
 <template>
   <div class="addClient">
     <div class="return clearfix">
-      <p class="left">
-        <van-icon
-          size="20"
-          name="arrow-left" />
-      </p>
-      <p class="left ret">返回</p>
+      <div @click="getBack">
+        <p class="left">
+          <van-icon
+            size="20"
+            name="arrow-left" />
+        </p>
+        <p class="left ret">返回</p>
+      </div>
     </div>
     <h2>添加客户信息</h2>
     <form
@@ -16,7 +18,7 @@
         <label for="male"><em>* &nbsp;</em>客户名称</label>
         <br>
         <input
-          v-model="form.username"
+          v-model="cust.CName"
           type="text"
           placeholder="请填写客户名称">
       </p>
@@ -24,7 +26,7 @@
         <label for="male"><em>* &nbsp;</em>洽谈人</label>
         <br>
         <input
-          v-model="form.username"
+          v-model="cust.MeetPerson"
           type="text"
           placeholder="请填写洽谈人">
       </p>
@@ -32,22 +34,32 @@
         <label for="male"><em>* &nbsp;</em>洽谈人电话</label>
         <br>
         <input
-          v-model="form.username"
+          v-model="cust.MeetPersonNo"
           type="text"
           placeholder="请填写洽谈人电话">
+      </p>
+      <p>
+        <label for="male"><em>* &nbsp;</em>与客户关系</label>
+        <br>
+        <input
+          v-model="cust.Relation"
+          type="text"
+          placeholder="请填写与客户关系">
       </p>
       <p>
         <label for="male"><em>* &nbsp;</em>客户区域</label>
         <br>
         <select
-          v-model="tree"
-          @change="onTree(tree)">
+          v-model="cust.CityCode"
+          @change="onTree(cust.CityCode)">
           <option
             v-for="item in regionsTree"
             :key="item.Code"
             :value="item.Code">{{ item.Name }}</option>
         </select>
-        <select>
+        <select
+          v-model="cust.CountyCode"
+          @change="onChildTree(cust.CountyCode)">
           <option
             v-for="item in childrenTree"
             :key="item.Code"
@@ -58,21 +70,20 @@
         <label for="male"><em>* &nbsp;</em>客户类型</label>
         <br>
         <select
+          v-model="cust.CType"
           name="carlist"
           form="carform">
-          <option value="volvo">竞对老客户</option>
-          <option value="saab">新入行客户</option>
+          <option value="竞对老客户">竞对老客户</option>
+          <option value="新入行客户">新入行客户</option>
         </select>
       </p>
       <p>
-        <label for="male"><em>* &nbsp;</em>客户类型</label>
+        <label for="male"><em>* &nbsp;</em>行业类型</label>
         <br>
-        <select
-          name="carlist"
-          form="carform">
-          <option value="volvo">矿业能源</option>
-          <option value="saab">建筑工程</option>
-          <option value="saab">环保绿化</option>
+        <select v-model="cust.ProfType">
+          <option value="矿业能源">矿业能源</option>
+          <option value="建筑工程">建筑工程</option>
+          <option value="环保绿化">环保绿化</option>
         </select>
       </p>
     </form>
@@ -86,8 +97,18 @@ export default {
   name: 'AddClient',
   data() {
     return {
-      form: {
-        username: ''
+      cust: {
+        id: -1,
+        CName: '', // 客户名称
+        CityCode: '', // 市编码
+        City: '', // 市名
+        CountyCode: '', // 县编码
+        County: '', // 县名
+        ProfType: '矿业能源', // 行业类型
+        CType: '竞对老客户', // 客户类型
+        MeetPersonNo: '', // 洽谈人电话
+        MeetPerson: '', // 洽谈人
+        Relation: '' // 与客户关系
       },
       regionsTree: [],
       childrenTree: [],
@@ -98,12 +119,37 @@ export default {
     this.getSelectTree()
   },
   methods: {
+    // 返回
+    getBack() {
+      this.$router.back()
+    },
     // 添加客户
     addClient() {
-      getCust()
+      if (this.cust.CName === '') {
+        this.$toast.fail('请填写客户名称')
+        return false
+      }
+      if (this.cust.MeetPerson === '') {
+        this.$toast.fail('请填写洽谈人')
+        return false
+      }
+      if (this.cust.MeetPersonNo === '') {
+        this.$toast.fail('请填写洽谈人电话')
+        return false
+      }
+      if (this.cust.Relation === '') {
+        this.$toast.fail('请填写与客户关系')
+      }
+      if (this.cust.CityCode === '' || this.cust.CountyCode === '') {
+        this.$toast.fail('请选择客户区域')
+        return false
+      }
+      getCust(this.cust)
         .then(res => {
-          if (res.code == 200) {
-            console.log(res.deta)
+          if (res.code === 200) {
+            this.$toast.success('添加成功')
+          } else {
+            this.$toast.fail(res.message)
           }
         })
     },
@@ -118,7 +164,16 @@ export default {
     onTree(obj) {
       this.regionsTree.forEach(item => {
         if (item.Code === obj) {
+          this.cust.City = item.Name
           this.childrenTree = item.children
+        }
+      })
+    },
+    // 获取区域名称
+    onChildTree(val) {
+      this.childrenTree.forEach(item => {
+        if (item.Code === val) {
+          this.cust.County = item.Name
         }
       })
     }

@@ -11,12 +11,11 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     if (localStorage.getItem('token')) {
-      config.headers['pctoken'] = localStorage.getItem('token')
+      config.headers['auth'] = localStorage.getItem('token')
     }
     return config
   },
   error => {
-    console.log(error)
     return Promise.reject(error)
   }
 )
@@ -27,7 +26,7 @@ service.interceptors.response.use(
   response => {
     const res = response.data
     // code 2001 means not login
-    if (res.code === 2001 || res.code === -1) {
+    if (res.code === 200) {
       store.commit('logout')
       // location.reload()
     }

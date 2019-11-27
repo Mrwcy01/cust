@@ -1,9 +1,11 @@
 <template>
   <div class="client">
     <div class="hello clearfix">
-      <span class="name">XXX,您好</span>
+      <span class="name">{{ userName }},您好</span>
       <span class="logout">注销登录</span>
-      <span class="icon right">
+      <span
+        class="icon right"
+        @click="getRefresh()">
         <van-icon
           size="20px"
           color="#ccc"
@@ -19,7 +21,9 @@
         <p class="num">20</p>
         <p>我的客户</p>
       </div>
-      <div class="right add">
+      <div
+        class="right add"
+        @click="addClient">
         <p class="addIcon">
           <van-icon
             size="30px"
@@ -38,45 +42,67 @@
           placeholder="请输入要搜索得客户名称">
         <button>查找</button>
       </div>
-      <div class="list">
-        <h3>山东一路通工程机械有限公司</h3>
+      <div
+        v-for="item in list"
+        :key="item.Id"
+        class="list"
+        @click="onClientDetails(item.Id)">
+        <h3>{{ item.CName }}</h3>
         <div class="msg">
-          <span class="name">吉奥</span>
-          <span class="phone">110</span>
+          <span class="name">{{ item.MeetPerson }}</span>
+          <span class="phone">{{ item.MeetPersonNo }}</span>
         </div>
-        <p>行业类型：矿业能源</p>
-        <p>客户类型：竞对老客户</p>
-        <p>客户区域：朔州市/朔城区</p>
-        <p>与客户关系：XXX</p>
-      </div>
-      <div class="list">
-        <h3>山东一路通工程机械有限公司</h3>
-        <div class="msg">
-          <span class="name">吉奥</span>
-          <span class="phone">110</span>
-        </div>
-        <p>行业类型：矿业能源</p>
-        <p>客户类型：竞对老客户</p>
-        <p>客户区域：朔州市/朔城区</p>
-        <p>与客户关系：XXX</p>
+        <p>行业类型：{{ item.ProfType }}</p>
+        <p>客户类型：{{ item.CType }}</p>
+        <p>客户区域：{{ item.City }}/{{ item.County }}</p>
+        <p>与客户关系：{{ item.Relation }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import { getCustList } from '@/api/client'
 export default {
   name: 'Client',
   data() {
     return {
-      userName: ''
+      userName: '',
+      list: []
     }
   },
   created() {
-
+    this.getList()
+    this.userName = this.$store.state.userInfo
+    console.log(this.$store.state.userInfo)
   },
   methods: {
-
+    // 列表详情
+    onClientDetails(falg) {
+      this.$router.push({
+        path: '/detailsClient',
+        query: {
+          id: falg
+        }
+      })
+    },
+    // 添加客户
+    addClient() {
+      this.$router.push({
+        path: '/addClient'
+      })
+    },
+    getList() {
+      getCustList()
+        .then(res => {
+          if (res.code === 200) {
+            this.list = res.result
+          }
+        })
+    },
+    getRefresh() {
+      this.$router.go(0)
+    }
   }
 }
 </script>
@@ -84,7 +110,7 @@ export default {
 <style lang='scss' scoped>
 .client{
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   background-color: #fff;
   .hello{
     padding: 60px 42px;

@@ -22,4 +22,19 @@
     }
   }
 }
+.van-toast--middle {
+  min-width: 30%;
+  height: 10%;
+  font-size: 28px;
+}
+.van-icon{
+  font-size: 28px;
+}
+.van-toast__text{
+  font-size: 28px;
+}
+.hidden{
+  height: 100%;
+  overflow: hidden;
+}
 </style>

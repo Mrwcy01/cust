@@ -3,7 +3,7 @@ import App from './App.vue'
 import router from './router/index'
 import store from './store/index'
 import 'lib-flexible'
-// import '@/permission' // permission control
+import '@/permission' // permission control
 import Vant from 'vant'
 import 'vant/lib/index.css'
 Vue.use(Vant)

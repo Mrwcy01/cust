@@ -1,12 +1,14 @@
 <template>
   <div class="detailsClient">
     <div class="return clearfix">
-      <p class="left">
-        <van-icon
-          size="20"
-          name="arrow-left" />
-      </p>
-      <p class="left ret">返回</p>
+      <div @click="getBack">
+        <p class="left">
+          <van-icon
+            size="20"
+            name="arrow-left" />
+        </p>
+        <p class="left ret">返回</p>
+      </div>
     </div>
     <ul class="tab-title clearfix">
       <li
@@ -23,7 +25,7 @@
             <label for="male"><em>* &nbsp;</em>客户名称</label>
             <br>
             <input
-              v-model="form.username"
+              v-model="cust.CName"
               type="text"
               placeholder="请填写客户名称">
           </p>
@@ -31,7 +33,7 @@
             <label for="male"><em>* &nbsp;</em>洽谈人</label>
             <br>
             <input
-              v-model="form.username"
+              v-model="cust.MeetPerson"
               type="text"
               placeholder="请填写洽谈人">
           </p>
@@ -39,96 +41,87 @@
             <label for="male"><em>* &nbsp;</em>洽谈人电话</label>
             <br>
             <input
-              v-model="form.username"
+              v-model="cust.MeetPersonNo"
               type="text"
               placeholder="请填写洽谈人电话">
+          </p>
+          <p>
+            <label for="male"><em>* &nbsp;</em>与客户关系</label>
+            <br>
+            <input
+              v-model="cust.Relation"
+              type="text"
+              placeholder="请填写与客户关系">
           </p>
           <p>
             <label for="male"><em>* &nbsp;</em>客户区域</label>
             <br>
             <select
-              name="carlist"
-              form="carform">
-              <option value="volvo">河北</option>
-              <option value="saab">北京</option>
+              v-model="cust.CityCode"
+              @change="onTree(cust.CityCode)">
+              <option
+                v-for="item in regionsTree"
+                :key="item.Code"
+                :value="item.Code">{{ item.Name }}</option>
             </select>
             <select
-              name="carlist"
-              form="carform">
-              <option value="volvo">河北</option>
-              <option value="saab">北京</option>
-            </select>
-          </p>
-          <p>
-            <label for="male"><em>* &nbsp;</em>客户类型</label>
-            <br>
-            <select
-              name="carlist"
-              form="carform">
-              <option value="volvo">竞对老客户</option>
-              <option value="saab">新入行客户</option>
+              v-model="cust.CountyCode"
+              @change="onChildTree(cust.CountyCode)">
+              <option
+                v-for="item in childrenTree"
+                :key="item.Code"
+                :value="item.Code">{{ item.Name }}</option>
             </select>
           </p>
           <p>
             <label for="male"><em>* &nbsp;</em>客户类型</label>
             <br>
             <select
+              v-model="cust.CType"
               name="carlist"
               form="carform">
-              <option value="volvo">矿业能源</option>
-              <option value="saab">建筑工程</option>
-              <option value="saab">环保绿化</option>
+              <option value="竞对老客户">竞对老客户</option>
+              <option value="新入行客户">新入行客户</option>
+            </select>
+          </p>
+          <p>
+            <label for="male"><em>* &nbsp;</em>行业类型</label>
+            <br>
+            <select v-model="cust.ProfType">
+              <option value="矿业能源">矿业能源</option>
+              <option value="建筑工程">建筑工程</option>
+              <option value="环保绿化">环保绿化</option>
             </select>
           </p>
         </div>
-        <button>更新客户信息</button>
+        <button @click="addClient">更新客户信息</button>
       </div>
       <!-- 拜访记录 -->
       <div v-show="selet === 1">
-        <div class="recording">
-          <p>拜访方式：走访</p>
-          <p>拜访目的：商谈意向</p>
-          <p>拜访日期：2019-11-25</p>
-          <p>意向吨位：33.0 ~ 40.0 吨以下</p>
-          <p>意向数量：1</p>
-          <p>意向类型：租车</p>
-          <p>意向产品：挖掘机</p>
-          <p>意向机型：斗山DX380LC-9C</p>
+        <div
+          v-for="item in logList"
+          :key="item.id"
+          class="recording">
+          <p>拜访方式：{{ item.VisitWay }}</p>
+          <p>拜访目的：{{ item.VisitPurpose }}</p>
+          <p>拜访日期：{{ item.VisitDate }}</p>
+          <p>意向吨位：{{ item.Tonnage }}</p>
+          <p>意向数量：{{ item.IntentCount }}</p>
+          <p>意向类型：{{ item.TargetCate }}</p>
+          <p>意向产品：{{ item.TargetProduct }}</p>
+          <p>意向机型：{{ item.MachineCate }}</p>
           <p>
-            <span>资金：有</span>
-            <span>工程：有</span>
-            <span>意向：无</span>
-            <span>竞争：有</span>
+            <span>资金：<span :class="item.HasMoney === 1 ? 'green' : 'red'">{{ item.HasMoney === 1 ? '有' : "无" }}</span></span>
+            <span>工程：<span :class="item.HasProject === 1 ? 'green' : 'red'">{{ item.HasProject === 1 ? '有' : "无" }}</span></span>
+            <span>意向：<span :class="item.HasIntention === 1 ? 'green' : 'red'">{{ item.HasIntention === 1 ? '有' : "无" }}</span></span>
+            <span>竞争：<span :class="item.HasCompete === 1 ? 'green' : 'red'">{{ item.HasCompete === 1 ? '有' : "无" }}</span></span>
           </p>
-          <p>预计日期：2019-12-12</p>
-          <p>竞争产品：三一、凯斯</p>
-          <p>客户关注商务条件：价格优惠、配件赠送</p>
-          <p>赢单率：需特殊商务支持(35％)</p>
+          <p>预计日期：{{ item.PrePurchaseDate }}</p>
+          <p>竞争产品：{{ item.CompeProd1 }} &nbsp; {{ item.CompeProd2 }} &nbsp; {{ item.CompeProd3 }}</p>
+          <p>客户关注商务条件：{{ item.Condition1 }} &nbsp; {{ item.Condition2 }}</p>
+          <!-- <p>赢单率：{{ item.WinRate }}</p> -->
           <p>拜访总结：</p>
-          <p>这里是总结</p>
-
-        </div>
-        <div class="recording">
-          <p>拜访方式：走访</p>
-          <p>拜访目的：商谈意向</p>
-          <p>拜访日期：2019-11-25</p>
-          <p>意向吨位：33.0 ~ 40.0 吨以下</p>
-          <p>意向数量：1</p>
-          <p>意向类型：租车</p>
-          <p>意向产品：挖掘机</p>
-          <p>意向机型：斗山DX380LC-9C</p>
-          <p class="detap">
-            <span>资金：有</span>
-            <span>工程：有</span>
-            <span>意向：无</span>
-            <span>竞争：有</span>
-          </p>
-          <p class="detap">预计日期：2019-12-12</p>
-          <p class="detap">竞争产品：三一、凯斯</p>
-          <p class="detap">客户关注商务条件：价格优惠、配件赠送</p>
-          <p class="detap">赢单率：需特殊商务支持(35％)</p>
-          <p class="detap">拜访总结：</p>
-          <p>这里是总结</p>
+          <p>{{ item.VisitSummary }}</p>
         </div>
       </div>
       <!-- 添加拜访记录 -->
@@ -137,39 +130,68 @@
           <p>
             <label for="male"><em>* &nbsp;</em>拜访方式</label>
             <br>
-            <select
-              name="carlist"
-              form="carform">
-              <option value="volvo">走访</option>
+            <select v-model="getLog.VisitWay">
+              <option value="走访">走访</option>
             </select>
           </p>
           <p>
             <label for="male"><em>* &nbsp;</em>拜访目的</label>
             <br>
-            <select
-              name="carlist"
-              form="carform">
-              <option value="volvo">商谈意向</option>
+            <select v-model="getLog.VisitPurpose">
+              <option value="商谈意向">商谈意向</option>
+              <option value="客情维护">客情维护</option>
             </select>
           </p>
+          <div class="birthday">
+            <label for="male"><em>* &nbsp;</em>拜访日期</label>
+            <br>
+            <div
+              class="input"
+              @click="showDate">
+              <p v-if="getLog.VisitDate == ''">请选择拜访日期</p>
+              <p v-else>{{ getLog.VisitDate }}</p>
+            </div>
+            <span @click="showDate" />
+            <Popup
+              v-model="date"
+              position="bottom"
+              :style="{ height: '20%' }">
+              <DatetimePicker
+                v-model="visitCurrentDate"
+                type="date"
+                @confirm="visitSelectDate"
+                @cancel="xiaoDate" />
+            </Popup>
+          </div>
           <p class="clearfix">
             <van-checkbox
-              v-model="checked"
+              v-model="getLog.HasMoney"
               class="left checked"
               shape="square">资金</van-checkbox>
             <van-checkbox
-              v-model="checked"
+              v-model="getLog.HasProject"
               class="left checked"
               shape="square">工程</van-checkbox>
             <van-checkbox
-              v-model="checked"
+              v-model="getLog.HasIntention"
               class="left checked"
               shape="square">意向</van-checkbox>
+          </p>
+          <p>
+            <label for="male"><em>* &nbsp;</em>意向类型</label>
+            <br>
+            <select v-model="getLog.TargetCate">
+              <option value="租车">租车</option>
+              <option value="二手机">二手机</option>
+              <option value="新机">新机</option>
+              <option value="其他">其他</option>
+            </select>
           </p>
           <p>
             <label for="male"><em>* &nbsp;</em>意向吨位</label>
             <br>
             <input
+              v-model="getLog.Tonnage"
               type="text"
               placeholder="请填写意向吨位">
           </p>
@@ -177,6 +199,7 @@
             <label for="male"><em>* &nbsp;</em>意向数量</label>
             <br>
             <input
+              v-model="getLog.IntentCount"
               type="text"
               placeholder="请填写意向数量">
           </p>
@@ -184,26 +207,17 @@
             <label for="male"><em>* &nbsp;</em>意向产品</label>
             <br>
             <input
+              v-model="getLog.TargetProduct"
               type="text"
               placeholder="请填写意向产品">
           </p>
           <p>
             <label for="male"><em>* &nbsp;</em>意向机型</label>
             <br>
-            <select
-              name="carlist"
-              form="carform">
-              <option value="volvo">东风</option>
-            </select>
-          </p>
-          <p>
-            <label for="male"><em>* &nbsp;</em>意向机型</label>
-            <br>
-            <select
-              name="carlist"
-              form="carform">
-              <option value="volvo">东风</option>
-            </select>
+            <input
+              v-model="getLog.MachineCate"
+              type="text"
+              placeholder="请填写意向产品">
           </p>
           <div class="birthday">
             <label for="male"><em>* &nbsp;</em>预计日期</label>
@@ -211,9 +225,8 @@
             <div
               class="input"
               @click="showPopup">
-              <p v-if="form.birthday == ''">请选择生日</p>
-              <p v-else>{{ form.birthday }}</p>
-
+              <p v-if="getLog.PrePurchaseDate == ''">请选择预计日期</p>
+              <p v-else>{{ getLog.PrePurchaseDate }}</p>
             </div>
             <span @click="showPopup" />
             <Popup
@@ -229,7 +242,7 @@
           </div>
           <p>
             <van-checkbox
-              v-model="checked"
+              v-model="getLog.HasCompete"
               class="checked"
               shape="square">竞争</van-checkbox>
           </p>
@@ -237,6 +250,7 @@
             <label for="male"><em>* &nbsp;</em>竞争产品1</label>
             <br>
             <input
+              v-model="getLog.CompeProd1"
               type="text"
               placeholder="请填写竞争产品">
           </p>
@@ -244,6 +258,7 @@
             <label for="male"><em>* &nbsp;</em>竞争产品2</label>
             <br>
             <input
+              v-model="getLog.CompeProd2"
               type="text"
               placeholder="请填写竞争产品">
           </p>
@@ -251,6 +266,7 @@
             <label for="male"><em>* &nbsp;</em>竞争产品3</label>
             <br>
             <input
+              v-model="getLog.CompeProd3"
               type="text"
               placeholder="请填写竞争产品">
           </p>
@@ -258,6 +274,7 @@
             <label for="male"><em>* &nbsp;</em>客户关注商务条件1</label>
             <br>
             <input
+              v-model="getLog.Condition1"
               type="text"
               placeholder="请填写客户关注商务条件">
           </p>
@@ -265,6 +282,7 @@
             <label for="male"><em>* &nbsp;</em>客户关注商务条件2</label>
             <br>
             <input
+              v-model="getLog.Condition2"
               type="text"
               placeholder="请填写客户关注商务条件">
           </p>
@@ -274,7 +292,7 @@
             <br>
             <van-cell-group>
               <van-field
-                v-model="checked"
+                v-model="getLog.VisitSummary"
                 rows="2"
                 autosize
                 type="textarea"
@@ -283,7 +301,7 @@
             </van-cell-group>
           </p>
         </div>
-        <button>添加拜访记录</button>
+        <button @click="addLog">添加拜访记录</button>
       </div>
     </div>
   </div>
@@ -291,39 +309,200 @@
 
 <script>
 import { DatetimePicker, Popup } from 'vant'
+import { getRegionsTree, getCust, getAddLog, getCustDetails, getLogList } from '@/api/client'
+
 export default {
   name: 'DetailsClient',
   components: { DatetimePicker, Popup },
   data() {
     return {
+      visitCurrentDate: null,
+      date: false,
+      cust: {},
+      getLog: {
+        Id: -1,
+        VisitWay: '走访', // 拜访方式
+        VisitPurpose: '商谈意向', // 拜访目的
+        VisitDate: '', // 拜访日期
+        VisitSummary: '', // 拜访总结
+        HasMoney: 0, // 有资金(1:有 0：无)
+        HasProject: 0, // 有项目(1:有 0：无)
+        HasCompete: 0, // 有竞争(1:有 0：无)
+        HasIntention: 0, // 有意向(1:有 0：无)
+        // WinRate: '', // 赢单率
+        Tonnage: '', // 意向吨位
+        IntentCount: '', // 意向数量
+        PrePurchaseDate: '', // 预计日期
+        TargetCate: '租车', // 意向类型
+        TargetProduct: '', // 意向产品
+        MachineCate: '', // 意向机型
+        CompeProd1: '', // 竞品1
+        CompeProd2: '', // 竞品2
+        CompeProd3: '', // 竞品3
+        Condition1: '', // 条件1
+        Condition2: ''
+      },
+      regionsTree: [],
+      childrenTree: [],
       currentDate: null,
       show: false,
-      checked: null,
-      selet: 2,
-      activeName: 'a',
+      selet: 0,
       tabList: ['客户详情', '拜访记录', '添加拜访记录'],
-      form: {
-        username: '',
-        birthday: ''
-      }
+      logList: []
     }
   },
   created() {
-    this.getNowFormatDate()
+    // this.getNowFormatDate()
+    this.getCustDetails()
+    this.getLogList()
+  },
+  mounted() {
+
   },
   methods: {
-    getNowFormatDate() {
-      var date = new Date()
-      var year = date.getFullYear()
-      var month = date.getMonth()
-      var strDate = date.getDate()
-      if (month >= 1 && month <= 9) {
-        month = '0' + month
+    // 客户详情
+    getCustDetails() {
+      getCustDetails({ id: this.$route.query.id })
+        .then(res => {
+          if (res.code === 200) {
+            this.cust = res.result
+            this.getSelectTree()
+          } else {
+            this.$toast.fail(res.message)
+          }
+        })
+    },
+    // 拜访日志列表
+    getLogList() {
+      getLogList()
+        .then(res => {
+          if (res.code === 200) {
+            this.logList = res.result
+          }
+        })
+    },
+    // 添加拜访记录
+    addLog() {
+      if (this.getLog.Tonnage === '') {
+        this.$toast.fail('请填写意向吨位')
+        return false
       }
-      if (strDate >= 0 && strDate <= 9) {
-        strDate = '0' + strDate
+      if (this.getLog.IntentCount === '') {
+        this.$toast.fail('请填写意向数量')
+        return false
       }
-      this.maxDate = new Date(parseInt(year), parseInt(month), parseInt(strDate))
+      if (this.getLog.PrePurchaseDate === '') {
+        this.$toast.fail('请选择预计日期')
+        return false
+      }
+      if (this.getLog.TargetProduct === '') {
+        this.$toast.fail('请填写意向产品')
+        return false
+      }
+      if (this.getLog.MachineCate === '') {
+        this.$toast.fail('请填写意向机型')
+        return false
+      }
+      if (this.getLog.CompeProd1 === '' && this.getLog.CompeProd2 === '' && this.getLog.CompeProd3 === '') {
+        this.$toast.fail('请填写竞争产品')
+        return false
+      }
+      if (this.getLog.Condition1 === '' && this.getLog.Condition2 === '') {
+        this.$toast.fail('请填写客户关注条件')
+        return false
+      }
+      if (this.getLog.getLog.VisitSummary === '') {
+        this.$toast.fail('请填写拜访总结')
+        return false
+      }
+      if (this.getLog.HasMoney === true) {
+        this.getLog.HasMoney = 1
+      } else {
+        this.getLog.HasMoney = 0
+      }
+      if (this.getLog.HasProject === true) {
+        this.getLog.HasProject = 1
+      } else {
+        this.getLog.HasProject = 0
+      }
+      if (this.getLog.HasIntention === true) {
+        this.getLog.HasIntention = 1
+      } else {
+        this.getLog.HasIntention = 0
+      }
+      if (this.getLog.HasCompete === true) {
+        this.getLog.HasCompete = 1
+      } else {
+        this.getLog.HasCompete = 0
+      }
+      getAddLog(this.getLog)
+        .then(res => {
+          if (res.code === 200) {
+            this.$toast.success('添加成功')
+          } else {
+            this.$toast.fail(res.message)
+          }
+        })
+    },
+    // 更新客户
+    addClient() {
+      if (this.cust.CName === '') {
+        this.$toast.fail('请填写客户名称')
+        return false
+      }
+      if (this.cust.MeetPerson === '') {
+        this.$toast.fail('请填写洽谈人')
+        return false
+      }
+      if (this.cust.MeetPersonNo === '') {
+        this.$toast.fail('请填写洽谈人电话')
+        return false
+      }
+      if (this.cust.Relation === '') {
+        this.$toast.fail('请填写与客户关系')
+      }
+      if (this.cust.CityCode === '' || this.cust.CountyCode === '') {
+        this.$toast.fail('请选择客户区域')
+        return false
+      }
+      getCust(this.cust)
+        .then(res => {
+          if (res.result === 1) {
+            this.$toast.success('添加成功')
+          } else {
+            this.$toast.fail(res.message)
+          }
+        })
+    },
+    // 获取省市联动数据
+    getSelectTree() {
+      getRegionsTree()
+        .then(res => {
+          this.regionsTree = res[0].children
+          this.regionsTree.forEach(item => {
+            if (item.Code === this.cust.CityCode) {
+              this.cust.City = item.Name
+              this.childrenTree = item.children
+            }
+          })
+        })
+    },
+    // 带出子集联动数据
+    onTree(obj) {
+      this.regionsTree.forEach(item => {
+        if (item.Code === obj) {
+          this.cust.City = item.Name
+          this.childrenTree = item.children
+        }
+      })
+    },
+    // 获取区域名称
+    onChildTree(val) {
+      this.childrenTree.forEach(item => {
+        if (item.Code === val) {
+          this.cust.County = item.Name
+        }
+      })
     },
     chageTab(num) {
       this.selet = num
@@ -331,22 +510,41 @@ export default {
     showPopup() {
       this.show = true
     },
+    // 拜访日期
+    visitSelectDate(date) {
+      var month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1
+      var currentDate = date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
+      this.getLog.VisitDate = date.getFullYear() + '-' + month + '-' + currentDate
+      this.date = false
+    },
+    // 预计日期
     selectDate(date) {
       var month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1
       var currentDate = date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
-      this.form.birthday = date.getFullYear() + '-' + month + '-' + currentDate
+      this.getLog.PrePurchaseDate = date.getFullYear() + '-' + month + '-' + currentDate
       this.show = false
     },
     quxiao() {
       this.show = false
+    },
+    // 返回
+    getBack() {
+      this.$router.back()
+    },
+    showDate() {
+      this.date = true
+    },
+    xiaoDate() {
+      this.date = false
     }
+
   }
 }
 </script>
 
 <style lang='scss' scoped>
 .detailsClient{
-  // height: 100vh;
+  min-height: 100vh;
   padding: 60px 30px;
   .return{
     font-size: 30px;
@@ -354,7 +552,12 @@ export default {
       margin: 5px;
     }
   }
-
+  .green{
+    color: green,
+  }
+  .red{
+    color: red,
+  }
   .tab-title{
     padding: 50px 0;
     margin-left: 10px;
@@ -414,7 +617,7 @@ export default {
       p{
         font-size: 26px;
         line-height: 38px;
-        span{
+        >span{
           margin-right: 45px;
         }
       }
@@ -465,6 +668,7 @@ export default {
   }
 
 }
+
 </style>
 <style  lang='scss'>
 .detailsClient{

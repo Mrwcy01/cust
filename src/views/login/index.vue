@@ -4,13 +4,13 @@
       <h1>客户管理系统</h1>
       <div class="inp-menu user">
         <input
-          v-model="from.username"
+          v-model="LoginRequest.UserName"
           type="text"
           placeholder="请输入手机号">
       </div>
       <div class="inp-menu pwd">
         <input
-          v-model="from.password"
+          v-model="LoginRequest.Password"
           type="password"
           placeholder="请输入密码">
       </div>
@@ -20,13 +20,14 @@
 </template>
 
 <script>
+import { getLogin } from '@/api/client'
 export default {
   name: 'Login',
   data() {
     return {
-      from: {
-        username: '',
-        password: ''
+      LoginRequest: {
+        UserName: '',
+        Password: ''
       }
 
     }
@@ -36,7 +37,25 @@ export default {
   },
   methods: {
     goHome() {
-
+      if (!this.LoginRequest.UserName) {
+        this.$toast.fail('请输入手机号码')
+        return false
+      }
+      if (!this.LoginRequest.Password) {
+        this.$toast.fail('请输入密码')
+        return false
+      }
+      getLogin(this.LoginRequest)
+        .then(res => {
+          if (res.code === 200) {
+            this.$toast.success('登录成功')
+            this.$store.commit('LOGIN', res.result.Token)
+            this.$store.commit('GET_USER_INFO', res.result.UserName)
+            this.$router.push('/')
+          } else {
+            this.$toast.fail(res.message)
+          }
+        })
     }
   }
 }
