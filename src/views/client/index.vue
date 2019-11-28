@@ -2,7 +2,9 @@
   <div class="client">
     <div class="hello clearfix">
       <span class="name">{{ userName }},您好</span>
-      <span class="logout">注销登录</span>
+      <span
+        class="logout"
+        @click="onLogout">注销登录</span>
       <span
         class="icon right"
         @click="getRefresh()">
@@ -14,11 +16,11 @@
     </div>
     <div class="addClient clearfix">
       <div class="left">
-        <p class="num">0</p>
+        <p class="num">{{ todayVisit }}</p>
         <p>今日拜访</p>
       </div>
       <div class="left me">
-        <p class="num">20</p>
+        <p class="num">{{ myCust }}</p>
         <p>我的客户</p>
       </div>
       <div
@@ -37,46 +39,121 @@
       <h2>客户列表</h2>
       <div class="search">
         <input
-          v-model="userName"
+          v-model="parameter.keywords"
           type="text"
           placeholder="请输入要搜索得客户名称">
-        <button>查找</button>
+        <button @click="MoreList(1)">查找</button>
       </div>
-      <div
-        v-for="item in list"
-        :key="item.Id"
-        class="list"
-        @click="onClientDetails(item.Id)">
-        <h3>{{ item.CName }}</h3>
-        <div class="msg">
-          <span class="name">{{ item.MeetPerson }}</span>
-          <span class="phone">{{ item.MeetPersonNo }}</span>
+      <list
+        v-model="fansLoading"
+        :finished="fansFinished"
+        finished-text="已加载全部"
+        @load="MoreList">
+        <div
+          v-for="item in list"
+          :key="item.Id"
+          class="list"
+          @click="onClientDetails(item.Id)">
+          <h3>{{ item.CName }}</h3>
+          <div class="msg">
+            <span class="name">{{ item.MeetPerson }}</span>
+            <span class="phone">{{ item.MeetPersonNo }}</span>
+          </div>
+          <p>行业类型：{{ item.ProfType }}</p>
+          <p>客户类型：{{ item.CType }}</p>
+          <p>客户区域：{{ item.City }}/{{ item.County }}</p>
+          <p>与客户关系：{{ item.Relation }}</p>
         </div>
-        <p>行业类型：{{ item.ProfType }}</p>
-        <p>客户类型：{{ item.CType }}</p>
-        <p>客户区域：{{ item.City }}/{{ item.County }}</p>
-        <p>与客户关系：{{ item.Relation }}</p>
-      </div>
+      </list>
+
     </div>
   </div>
 </template>
 
 <script>
-import { getCustList } from '@/api/client'
+import { Dialog, List } from 'vant'
+import { getCustList, getMyCustCountTodayVisit } from '@/api/client'
 export default {
   name: 'Client',
+  components: {
+    List
+  },
   data() {
     return {
+      fansLoading: false,
+      fansFinished: false,
       userName: '',
-      list: []
+      list: [],
+      keyWord: '',
+      myCust: null,
+      todayVisit: null,
+      parameter: {
+        keywords: '',
+        currpage: 1, // 当前页
+        pagesize: 10, // 每页多少条
+        auth: true
+      }
     }
   },
   created() {
-    this.getList()
+    this.getMyCustCountTodayVisit()
     this.userName = this.$store.state.userInfo
-    console.log(this.$store.state.userInfo)
   },
   methods: {
+    // 查找
+    onSearch() {
+      this.list = []
+      getCustList({ keywords: this.parameter.keywords })
+        .then((res) => {
+          if (res.code === 200) {
+            this.parameter.currpage === 1 ? this.list = res.result : this.list = this.list.concat(res.result)
+            // 判读是否加载到最后一页
+            this.parameter.currpage >= res.total / 10 ? this.fansFinished = true : this.parameter.currpage++
+            // 请求完毕后隐藏正在 加载样式
+            this.fansLoading = false
+          }
+        })
+    },
+    MoreList(num) {
+      this.fansLoading = true
+      if (num) {
+        this.list = []
+        this.parameter.currpage = 1
+      }
+      getCustList(this.parameter)
+        .then((res) => {
+          if (res.code === 200) {
+            this.parameter.currpage === 1 ? this.list = res.result : this.list = this.list.concat(res.result)
+            // 判读是否加载到最后一页
+            this.parameter.currpage >= res.total / 10 ? this.fansFinished = true : this.parameter.currpage++
+            // 请求完毕后隐藏正在 加载样式
+            this.fansLoading = false
+          }
+        })
+    },
+    // 注销登录
+    onLogout() {
+      Dialog.confirm({
+        message: '确认退出吗？'
+      }).then(() => {
+        this.$store.commit('logout')
+        this.$router.push({
+          path: '/login'
+        })
+      }).catch(() => {
+        // on cancel
+      })
+    },
+    // 我的客户及拜访记录
+    getMyCustCountTodayVisit() {
+      getMyCustCountTodayVisit()
+        .then(res => {
+          if (res.code === 200) {
+            this.myCust = res.result.ucount
+            this.todayVisit = res.result.vcount
+          }
+        })
+    },
     // 列表详情
     onClientDetails(falg) {
       this.$router.push({
@@ -119,9 +196,9 @@ export default {
       font-weight: 700;
     }
     .logout{
-      margin-left: 30px;
+      margin-left: 40px;
       color: #84d7ff;
-      font-size: 21px;
+      font-size: 24px;
     }
   }
   .addClient{
@@ -153,7 +230,7 @@ export default {
     }
     .search{
       input{
-        width: 80%;
+        width: 75%;
         height: 52px;
         color: #9B9B9B;
         font-size: 28px;
@@ -165,8 +242,8 @@ export default {
         width: 100px;
         height: 60px;
         background-color: #3498db;
-        margin-left: 10px;
         color: #ffffff;
+        margin-left: 10px;
         border-radius: 10px;
       }
     }
@@ -195,3 +272,25 @@ export default {
 }
 </style>
 
+<style lang="scss">
+  .van-dialog{
+    width: 70%;
+    height: 15%;
+    .van-dialog__content{
+      height: 65%;
+      padding-top: 10%;
+      text-align: center;
+      .van-dialog__message{
+      text-align: center;
+
+      }
+    }
+    .van-dialog__footer--buttons{
+      height: 35%;
+      .van-button{
+        width: 50%;
+        height: 100%;
+      }
+    }
+  }
+</style>

@@ -53,6 +53,9 @@
           v-model="cust.CityCode"
           @change="onTree(cust.CityCode)">
           <option
+            disabled
+            value="">请选择</option>
+          <option
             v-for="item in regionsTree"
             :key="item.Code"
             :value="item.Code">{{ item.Name }}</option>
@@ -60,6 +63,9 @@
         <select
           v-model="cust.CountyCode"
           @change="onChildTree(cust.CountyCode)">
+          <option
+            disabled
+            value="">请选择</option>
           <option
             v-for="item in childrenTree"
             :key="item.Code"
@@ -119,6 +125,10 @@ export default {
     this.getSelectTree()
   },
   methods: {
+    isvalidPhoneNum(str) {
+      const reg = /^1[3456789]\d{9}$/
+      return reg.test(str)
+    },
     // 返回
     getBack() {
       this.$router.back()
@@ -136,6 +146,11 @@ export default {
       if (this.cust.MeetPersonNo === '') {
         this.$toast.fail('请填写洽谈人电话')
         return false
+      } else {
+        if (!this.isvalidPhoneNum(this.cust.MeetPersonNo)) {
+          this.$toast.fail('洽谈人电话不符合格式')
+          return false
+        }
       }
       if (this.cust.Relation === '') {
         this.$toast.fail('请填写与客户关系')
@@ -148,6 +163,9 @@ export default {
         .then(res => {
           if (res.code === 200) {
             this.$toast.success('添加成功')
+            this.$router.push({
+              path: '/'
+            })
           } else {
             this.$toast.fail(res.message)
           }
@@ -183,7 +201,7 @@ export default {
 
 <style lang='scss' scoped>
 .addClient{
-  height: 100vh;
+  min-height: 100vh;
   padding: 60px 30px;
   .return{
     font-size: 30px;

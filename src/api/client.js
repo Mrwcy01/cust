@@ -55,3 +55,10 @@ export const getLogList = (params) => request({
   method: 'GET',
   params
 })
+
+// 我的客户下拉列表
+export const getMycustsList = (params) => request({
+  url: '/cust/getMycustsDDL',
+  method: 'GET',
+  params
+})

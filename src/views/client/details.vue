@@ -98,35 +98,52 @@
       </div>
       <!-- 拜访记录 -->
       <div v-show="selet === 1">
-        <div
-          v-for="item in logList"
-          :key="item.id"
-          class="recording">
-          <p>拜访方式：{{ item.VisitWay }}</p>
-          <p>拜访目的：{{ item.VisitPurpose }}</p>
-          <p>拜访日期：{{ item.VisitDate }}</p>
-          <p>意向吨位：{{ item.Tonnage }}</p>
-          <p>意向数量：{{ item.IntentCount }}</p>
-          <p>意向类型：{{ item.TargetCate }}</p>
-          <p>意向产品：{{ item.TargetProduct }}</p>
-          <p>意向机型：{{ item.MachineCate }}</p>
-          <p>
-            <span>资金：<span :class="item.HasMoney === 1 ? 'green' : 'red'">{{ item.HasMoney === 1 ? '有' : "无" }}</span></span>
-            <span>工程：<span :class="item.HasProject === 1 ? 'green' : 'red'">{{ item.HasProject === 1 ? '有' : "无" }}</span></span>
-            <span>意向：<span :class="item.HasIntention === 1 ? 'green' : 'red'">{{ item.HasIntention === 1 ? '有' : "无" }}</span></span>
-            <span>竞争：<span :class="item.HasCompete === 1 ? 'green' : 'red'">{{ item.HasCompete === 1 ? '有' : "无" }}</span></span>
-          </p>
-          <p>预计日期：{{ item.PrePurchaseDate }}</p>
-          <p>竞争产品：{{ item.CompeProd1 }} &nbsp; {{ item.CompeProd2 }} &nbsp; {{ item.CompeProd3 }}</p>
-          <p>客户关注商务条件：{{ item.Condition1 }} &nbsp; {{ item.Condition2 }}</p>
-          <!-- <p>赢单率：{{ item.WinRate }}</p> -->
-          <p>拜访总结：</p>
-          <p>{{ item.VisitSummary }}</p>
-        </div>
+        <list
+          v-model="fansLoading"
+          :finished="fansFinished"
+          finished-text="已加载全部"
+          @load="MoreList">
+          <div
+            v-for="item in logList"
+            :key="item.id"
+            class="recording">
+            <p>拜访方式：{{ item.VisitWay }}</p>
+            <p>拜访目的：{{ item.VisitPurpose }}</p>
+            <p>拜访日期：{{ splitStr(item.VisitDate) }}</p>
+            <p>意向吨位：{{ item.Tonnage }}</p>
+            <p>意向数量：{{ item.IntentCount }}</p>
+            <p>意向类型：{{ item.TargetCate }}</p>
+            <p>意向产品：{{ item.TargetProduct }}</p>
+            <p>意向机型：{{ item.MachineCate }}</p>
+            <p>
+              <span>资金：<span :class="item.HasMoney === 1 ? 'green' : 'red'">{{ item.HasMoney === 1 ? '有' : "无" }}</span></span>
+              <span>工程：<span :class="item.HasProject === 1 ? 'green' : 'red'">{{ item.HasProject === 1 ? '有' : "无" }}</span></span>
+              <span>意向：<span :class="item.HasIntention === 1 ? 'green' : 'red'">{{ item.HasIntention === 1 ? '有' : "无" }}</span></span>
+              <span>竞争：<span :class="item.HasCompete === 1 ? 'green' : 'red'">{{ item.HasCompete === 1 ? '有' : "无" }}</span></span>
+            </p>
+            <p>预计日期：{{ splitStr(item.PrePurchaseDate) }}</p>
+            <p>竞争产品：{{ item.CompeProd1 }} &nbsp; {{ item.CompeProd2 }} &nbsp; {{ item.CompeProd3 }}</p>
+            <p>客户关注商务条件：{{ item.Condition1 }} &nbsp; {{ item.Condition2 }}</p>
+            <!-- <p>赢单率：{{ item.WinRate }}</p> -->
+            <p>拜访总结：</p>
+            <p>{{ item.VisitSummary }}</p>
+          </div>
+        </list>
+
       </div>
       <!-- 添加拜访记录 -->
       <div v-show="selet === 2">
         <div class="form">
+          <!-- <p>
+            <label for="male"><em>* &nbsp;</em>客户名称</label>
+            <br>
+            <select v-model="getLog.CId">
+              <option
+                v-for="item in userNameList"
+                :key="item.Id"
+                :value="item.Id">{{ item.CName }}</option>
+            </select>
+          </p> -->
           <p>
             <label for="male"><em>* &nbsp;</em>拜访方式</label>
             <br>
@@ -149,7 +166,7 @@
               class="input"
               @click="showDate">
               <p v-if="getLog.VisitDate == ''">请选择拜访日期</p>
-              <p v-else>{{ getLog.VisitDate }}</p>
+              <p v-else>{{ VisitDate }}</p>
             </div>
             <span @click="showDate" />
             <Popup
@@ -199,9 +216,10 @@
             <label for="male"><em>* &nbsp;</em>意向数量</label>
             <br>
             <input
-              v-model="getLog.IntentCount"
+              v-model.number="getLog.IntentCount"
               type="text"
-              placeholder="请填写意向数量">
+              placeholder="请填写意向数量"
+              @blur="num(getLog.IntentCount)">
           </p>
           <p>
             <label for="male"><em>* &nbsp;</em>意向产品</label>
@@ -226,7 +244,7 @@
               class="input"
               @click="showPopup">
               <p v-if="getLog.PrePurchaseDate == ''">请选择预计日期</p>
-              <p v-else>{{ getLog.PrePurchaseDate }}</p>
+              <p v-else>{{ PrePurchaseDate }}</p>
             </div>
             <span @click="showPopup" />
             <Popup
@@ -308,19 +326,24 @@
 </template>
 
 <script>
-import { DatetimePicker, Popup } from 'vant'
-import { getRegionsTree, getCust, getAddLog, getCustDetails, getLogList } from '@/api/client'
+import { DatetimePicker, Popup, List } from 'vant'
+import { getMycustsList, getRegionsTree, getCust, getAddLog, getCustDetails, getLogList } from '@/api/client'
 
 export default {
   name: 'DetailsClient',
-  components: { DatetimePicker, Popup },
+  components: { DatetimePicker, Popup, List },
   data() {
     return {
+      PrePurchaseDate: null,
+      VisitDate: null,
+      fansLoading: false,
+      fansFinished: false,
       visitCurrentDate: null,
       date: false,
       cust: {},
       getLog: {
         Id: -1,
+        CId: this.$route.query.id,
         VisitWay: '走访', // 拜访方式
         VisitPurpose: '商谈意向', // 拜访目的
         VisitDate: '', // 拜访日期
@@ -331,7 +354,7 @@ export default {
         HasIntention: 0, // 有意向(1:有 0：无)
         // WinRate: '', // 赢单率
         Tonnage: '', // 意向吨位
-        IntentCount: '', // 意向数量
+        IntentCount: null, // 意向数量
         PrePurchaseDate: '', // 预计日期
         TargetCate: '租车', // 意向类型
         TargetProduct: '', // 意向产品
@@ -348,18 +371,48 @@ export default {
       show: false,
       selet: 0,
       tabList: ['客户详情', '拜访记录', '添加拜访记录'],
-      logList: []
+      logList: [],
+      parameter: {
+        currpage: 1, // 当前页
+        pagesize: 10, // 每页多少条
+        auth: true
+      },
+      userNameList: []
     }
   },
   created() {
-    // this.getNowFormatDate()
     this.getCustDetails()
-    this.getLogList()
-  },
-  mounted() {
-
+    this.MoreList()
+    this.getMycustsSelect()
   },
   methods: {
+    splitStr(str) {
+      return str.split('T')[0]
+    },
+    isvalidPhoneNum(str) {
+      const reg = /^1[3456789]\d{9}$/
+      return reg.test(str)
+    },
+    // 客户选择下拉
+    getMycustsSelect() {
+      getMycustsList()
+        .then(res => {
+          this.userNameList = res.result
+        })
+    },
+    MoreList() {
+      this.fansLoading = true
+      getLogList(this.parameter)
+        .then((res) => {
+          if (res.code === 200) {
+            this.parameter.currpage === 1 ? this.logList = res.result : this.logList = this.logList.concat(res.result)
+            // 判读是否加载到最后一页
+            this.parameter.currpage >= res.total / 10 ? this.fansFinished = true : this.parameter.currpage++
+            // 请求完毕后隐藏正在 加载样式
+            this.fansLoading = false
+          }
+        })
+    },
     // 客户详情
     getCustDetails() {
       getCustDetails({ id: this.$route.query.id })
@@ -372,22 +425,22 @@ export default {
           }
         })
     },
-    // 拜访日志列表
-    getLogList() {
-      getLogList()
-        .then(res => {
-          if (res.code === 200) {
-            this.logList = res.result
-          }
-        })
+    num() {
+      if (!Number(this.getLog.IntentCount) || Number(this.getLog.IntentCount) < 0) {
+        this.getLog.IntentCount = null
+      }
     },
     // 添加拜访记录
     addLog() {
+      if (this.getLog.VisitDate === '') {
+        this.$toast.fail('请选择拜访日期')
+        return false
+      }
       if (this.getLog.Tonnage === '') {
         this.$toast.fail('请填写意向吨位')
         return false
       }
-      if (this.getLog.IntentCount === '') {
+      if (this.getLog.IntentCount === null) {
         this.$toast.fail('请填写意向数量')
         return false
       }
@@ -411,7 +464,7 @@ export default {
         this.$toast.fail('请填写客户关注条件')
         return false
       }
-      if (this.getLog.getLog.VisitSummary === '') {
+      if (this.getLog.VisitSummary === '') {
         this.$toast.fail('请填写拜访总结')
         return false
       }
@@ -457,6 +510,11 @@ export default {
       if (this.cust.MeetPersonNo === '') {
         this.$toast.fail('请填写洽谈人电话')
         return false
+      } else {
+        if (!this.isvalidPhoneNum(this.cust.MeetPersonNo)) {
+          this.$toast.fail('洽谈人电话不符合格式')
+          return false
+        }
       }
       if (this.cust.Relation === '') {
         this.$toast.fail('请填写与客户关系')
@@ -514,14 +572,16 @@ export default {
     visitSelectDate(date) {
       var month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1
       var currentDate = date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
-      this.getLog.VisitDate = date.getFullYear() + '-' + month + '-' + currentDate
+      this.VisitDate = date.getFullYear() + '-' + month + '-' + currentDate
+      this.getLog.VisitDate = date.getFullYear() + '-' + month + '-' + currentDate + ' 01:00:00'
       this.date = false
     },
     // 预计日期
     selectDate(date) {
       var month = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1
       var currentDate = date.getDate() < 10 ? '0' + date.getDate() : date.getDate()
-      this.getLog.PrePurchaseDate = date.getFullYear() + '-' + month + '-' + currentDate
+      this.PrePurchaseDate = date.getFullYear() + '-' + month + '-' + currentDate
+      this.getLog.PrePurchaseDate = date.getFullYear() + '-' + month + '-' + currentDate + ' 01:00:00'
       this.show = false
     },
     quxiao() {

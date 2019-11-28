@@ -13,8 +13,8 @@ import('./assets/css/base.css')
 Vue.config.productionTip = false
 
 // 移动端调试工具 log日志 网络请求  dom
-import Vconsole from 'vconsole'
-new Vconsole()
+// import Vconsole from 'vconsole'
+// new Vconsole()
 
 new Vue({
   router,

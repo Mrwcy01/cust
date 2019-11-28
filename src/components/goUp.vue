@@ -1,8 +1,10 @@
 <template>
   <div
     v-if="show"
-    class="up iconfont iconicon_fanhuihei"
-    @click.stop="goUp()" />
+    class="up"
+    @click.stop="goUp()">
+    <van-icon name="arrow-up" />
+  </div>
 </template>
 <script>
 export default {
@@ -50,7 +52,7 @@ export default {
     border-radius:5px;
     text-align: center;
     line-height: 60px;
-    transform: rotate(90deg);
+    // transform: rotate(90deg);
   }
 </style>
 
