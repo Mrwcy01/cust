@@ -6,11 +6,12 @@ import 'lib-flexible'
 import '@/permission' // permission control
 import Vant from 'vant'
 import 'vant/lib/index.css'
-Vue.use(Vant)
+
 // 基础样式 引入
 import('./assets/css/base.css')
 // 阻止启动生产消息
 Vue.config.productionTip = false
+Vue.use(Vant)
 
 // 移动端调试工具 log日志 网络请求  dom
 // import Vconsole from 'vconsole'

@@ -1,6 +1,7 @@
 import axios from 'axios'
 import store from '@/store'
 import router from '@/router'
+import { Toast } from 'vant'
 // import { setToken } from '@/utils/auth'
 // const TOKEN = setToken()
 
@@ -19,7 +20,6 @@ const service = axios.create({
 service.interceptors.request.use(
   config => {
     if (window.sessionStorage.getItem('token')) {
-      // console.log(, '132')
       config.headers['auth'] = window.sessionStorage.getItem('token')
     }
     return config
@@ -34,8 +34,7 @@ service.interceptors.response.use(
   // 自定义 code 标识请求状态
   response => {
     const res = response.data
-    // code 2001 means not login
-    if (res.code === 404) {
+    if (res.code === 404 || res.code === 401) {
       store.commit('logout')
       router.replace('/login')
     }
@@ -43,6 +42,7 @@ service.interceptors.response.use(
   },
   // 通过 XMLHttpRequest 对象状态码标识
   error => {
+    Toast.fail(error.message)
     return Promise.reject(error)
   }
 )

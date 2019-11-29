@@ -129,21 +129,13 @@
             <p>{{ item.VisitSummary }}</p>
           </div>
         </list>
-
+        <p
+          v-if="logList.length === 0"
+          class="noList">暂无拜访记录</p>
       </div>
       <!-- 添加拜访记录 -->
       <div v-show="selet === 2">
         <div class="form">
-          <!-- <p>
-            <label for="male"><em>* &nbsp;</em>客户名称</label>
-            <br>
-            <select v-model="getLog.CId">
-              <option
-                v-for="item in userNameList"
-                :key="item.Id"
-                :value="item.Id">{{ item.CName }}</option>
-            </select>
-          </p> -->
           <p>
             <label for="male"><em>* &nbsp;</em>拜访方式</label>
             <br>
@@ -176,6 +168,8 @@
               <DatetimePicker
                 v-model="visitCurrentDate"
                 type="date"
+                :max-date="maxDate"
+                :min-date="minDate"
                 @confirm="visitSelectDate"
                 @cancel="xiaoDate" />
             </Popup>
@@ -254,6 +248,8 @@
               <DatetimePicker
                 v-model="currentDate"
                 type="date"
+                :max-date="maxDate"
+                :min-date="minDate"
                 @confirm="selectDate"
                 @cancel="quxiao" />
             </Popup>
@@ -334,6 +330,8 @@ export default {
   components: { DatetimePicker, Popup, List },
   data() {
     return {
+      minDate: new Date(2015, 1, 1),
+      maxDate: '',
       PrePurchaseDate: null,
       VisitDate: null,
       fansLoading: false,
@@ -384,6 +382,7 @@ export default {
     this.getCustDetails()
     this.MoreList()
     this.getMycustsSelect()
+    this.getNowFormatDate()
   },
   methods: {
     splitStr(str) {
@@ -409,6 +408,8 @@ export default {
             // 判读是否加载到最后一页
             this.parameter.currpage >= res.total / 10 ? this.fansFinished = true : this.parameter.currpage++
             // 请求完毕后隐藏正在 加载样式
+            this.fansLoading = false
+          } else {
             this.fansLoading = false
           }
         })
@@ -492,6 +493,10 @@ export default {
         .then(res => {
           if (res.code === 200) {
             this.$toast.success('添加成功')
+            this.MoreList()
+            this.clearForm()
+            this.selet = 1
+            window.scrollTo(0, 0)
           } else {
             this.$toast.fail(res.message)
           }
@@ -596,6 +601,47 @@ export default {
     },
     xiaoDate() {
       this.date = false
+    },
+    getNowFormatDate() {
+      var date = new Date()
+      var year = date.getFullYear()
+      var month = date.getMonth() + 1
+      var strDate = date.getDate()
+      if (month >= 1 && month <= 9) {
+        month = '0' + month
+      }
+      if (strDate >= 0 && strDate <= 9) {
+        strDate = '0' + strDate
+      }
+      this.getLog.VisitDate = year + '-' + month + '-' + strDate + ' 01:00:00'
+      this.VisitDate = year + '-' + month + '-' + strDate
+      this.maxDate = new Date(parseInt(year), parseInt(month), parseInt(strDate))
+    },
+    clearForm() {
+      this.getLog = {
+        Id: -1,
+        CId: this.$route.query.id,
+        VisitWay: '走访', // 拜访方式
+        VisitPurpose: '商谈意向', // 拜访目的
+        VisitDate: '', // 拜访日期
+        VisitSummary: '', // 拜访总结
+        HasMoney: 0, // 有资金(1:有 0：无)
+        HasProject: 0, // 有项目(1:有 0：无)
+        HasCompete: 0, // 有竞争(1:有 0：无)
+        HasIntention: 0, // 有意向(1:有 0：无)
+        // WinRate: '', // 赢单率
+        Tonnage: '', // 意向吨位
+        IntentCount: null, // 意向数量
+        PrePurchaseDate: '', // 预计日期
+        TargetCate: '租车', // 意向类型
+        TargetProduct: '', // 意向产品
+        MachineCate: '', // 意向机型
+        CompeProd1: '', // 竞品1
+        CompeProd2: '', // 竞品2
+        CompeProd3: '', // 竞品3
+        Condition1: '', // 条件1
+        Condition2: ''
+      }
     }
 
   }
@@ -761,5 +807,11 @@ export default {
     line-height: 100px;
     font-size: 30px;
   }
+}
+.noList{
+  text-align: center;
+  margin-top: 50%;
+  font-size: 26px;
+  color: #ccc;
 }
 </style>

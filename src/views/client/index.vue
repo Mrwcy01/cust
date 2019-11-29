@@ -65,7 +65,9 @@
           <p>与客户关系：{{ item.Relation }}</p>
         </div>
       </list>
-
+      <p
+        v-if="list.length === 0"
+        class="noList">暂无客户信息</p>
     </div>
   </div>
 </template>
@@ -100,20 +102,6 @@ export default {
     this.userName = this.$store.state.userInfo
   },
   methods: {
-    // 查找
-    onSearch() {
-      this.list = []
-      getCustList({ keywords: this.parameter.keywords })
-        .then((res) => {
-          if (res.code === 200) {
-            this.parameter.currpage === 1 ? this.list = res.result : this.list = this.list.concat(res.result)
-            // 判读是否加载到最后一页
-            this.parameter.currpage >= res.total / 10 ? this.fansFinished = true : this.parameter.currpage++
-            // 请求完毕后隐藏正在 加载样式
-            this.fansLoading = false
-          }
-        })
-    },
     MoreList(num) {
       this.fansLoading = true
       if (num) {
