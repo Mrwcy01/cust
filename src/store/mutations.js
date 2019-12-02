@@ -27,5 +27,8 @@ export default {
     }
     sessionStorage.removeItem('userInfo')
     sessionStorage.removeItem('token')
+  },
+  GET_USER_FALG(state, data) {
+    state.falg = data
   }
 }

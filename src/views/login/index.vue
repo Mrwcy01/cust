@@ -34,7 +34,6 @@ export default {
         UserName: '',
         Password: ''
       }
-
     }
   },
   created() {
@@ -52,9 +51,6 @@ export default {
     // 记住密码
     setUserInfo() {
       if (this.checked) {
-        console.log(this.LoginRequest.UserName)
-        console.log(this.LoginRequest.Password)
-
         this.setCookie('username', this.LoginRequest.UserName)
         this.setCookie('Password', this.LoginRequest.Password)
         this.setCookie('remember', this.checked)
@@ -99,6 +95,7 @@ export default {
             this.$toast.success('登录成功')
             this.$store.commit('LOGIN', res.result.Token)
             this.$store.commit('GET_USER_INFO', res.result.UserName)
+            this.$store.commit('GET_USER_FALG', res.result.btnStr)
             this.$router.push('/')
           } else {
             this.$toast.fail(res.message)

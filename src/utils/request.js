@@ -6,15 +6,15 @@ import { Toast } from 'vant'
 // const TOKEN = setToken()
 
 // 创建 axios 实例
-const service = axios.create({
-  baseURL: 'http://crm.4000600031.com:8101/api/',
-  timeout: 5000 // 请求延迟
-})
-// 本地
 // const service = axios.create({
-//   baseURL: 'http://192.168.1.104:8101/api/',
+//   baseURL: 'http://crm.4000600031.com:8101/api/',
 //   timeout: 5000 // 请求延迟
 // })
+// 本地
+const service = axios.create({
+  baseURL: 'http://192.168.1.104:8101/api/',
+  timeout: 5000 // 请求延迟
+})
 
 // 请求拦截
 service.interceptors.request.use(

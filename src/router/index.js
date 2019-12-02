@@ -9,6 +9,8 @@ import client from '../views/client'
 import addClient from '../views/client/add'
 // 客户详情
 import detailsClient from '../views/client/details'
+// 修改密码
+import changePwd from '../views/login/changePwd'
 Vue.use(Router)
 
 const router = new Router({
@@ -34,6 +36,11 @@ const router = new Router({
       path: '/detailsClient',
       name: 'detailsClient',
       component: detailsClient
+    },
+    {
+      path: '/changePwd',
+      name: 'changePwd',
+      component: changePwd
     }
   ]
 })

@@ -4,7 +4,8 @@ export default {
     // 模拟数据
     var data = {
       userInfo: '',
-      token: '' // 登录态
+      token: '', // 登录态
+      falg: ''
     }
   }
 }

@@ -62,3 +62,10 @@ export const getMycustsList = (params) => request({
   method: 'GET',
   params
 })
+
+// 修改密码
+export const getChangePwd = (data) => request({
+  url: '/Login/ChangePwd',
+  method: 'POST',
+  data
+})

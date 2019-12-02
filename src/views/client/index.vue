@@ -15,7 +15,9 @@
       </span>
     </div>
     <div class="addClient clearfix">
-      <div class="left">
+      <div
+        class="left"
+        @click="onClient">
         <p class="num">{{ todayVisit }}</p>
         <p>今日拜访</p>
       </div>
@@ -75,6 +77,8 @@
 <script>
 import { Dialog, List } from 'vant'
 import { getCustList, getMyCustCountTodayVisit } from '@/api/client'
+import { log } from 'util'
+import { setTimeout } from 'timers'
 export default {
   name: 'Client',
   components: {
@@ -94,11 +98,15 @@ export default {
         currpage: 1, // 当前页
         pagesize: 10, // 每页多少条
         auth: true
-      }
+      },
+      falg: ''
     }
   },
   created() {
     this.getMyCustCountTodayVisit()
+  },
+  mounted() {
+    this.falg = this.$store.state.falg
     this.userName = this.$store.state.userInfo
   },
   methods: {
@@ -150,6 +158,15 @@ export default {
           id: falg
         }
       })
+    },
+    // 拜访客户
+    onClient(falg) {
+      // this.$router.push({
+      //   path: '/detailsClient',
+      //   query: {
+      //     selet: 1
+      //   }
+      // })
     },
     // 添加客户
     addClient() {
@@ -266,11 +283,10 @@ export default {
     height: 15%;
     .van-dialog__content{
       height: 65%;
-      padding-top: 10%;
+      padding-top: 5%;
       text-align: center;
       .van-dialog__message{
-      text-align: center;
-
+        text-align: center;
       }
     }
     .van-dialog__footer--buttons{

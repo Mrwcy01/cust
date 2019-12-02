@@ -373,7 +373,8 @@ export default {
       parameter: {
         currpage: 1, // 当前页
         pagesize: 10, // 每页多少条
-        auth: true
+        auth: true,
+        cId: this.$route.query.id
       },
       userNameList: []
     }
