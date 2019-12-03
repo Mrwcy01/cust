@@ -14,7 +14,9 @@
           name="replay" />
       </span>
     </div>
-    <div class="addClient clearfix">
+    <div
+      v-show="falg"
+      class="addClient clearfix">
       <div
         class="left"
         @click="onClient">
@@ -77,8 +79,6 @@
 <script>
 import { Dialog, List } from 'vant'
 import { getCustList, getMyCustCountTodayVisit } from '@/api/client'
-import { log } from 'util'
-import { setTimeout } from 'timers'
 export default {
   name: 'Client',
   components: {

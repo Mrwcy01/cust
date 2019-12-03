@@ -248,7 +248,6 @@
               <DatetimePicker
                 v-model="currentDate"
                 type="date"
-                :max-date="maxDate"
                 :min-date="minDate"
                 @confirm="selectDate"
                 @cancel="quxiao" />
@@ -376,7 +375,8 @@ export default {
         auth: true,
         cId: this.$route.query.id
       },
-      userNameList: []
+      userNameList: [],
+      falg: ''
     }
   },
   created() {
@@ -384,6 +384,12 @@ export default {
     this.MoreList()
     this.getMycustsSelect()
     this.getNowFormatDate()
+  },
+  mounted() {
+    this.falg = this.$store.state.falg
+    if (!this.falg) {
+      this.tabList = ['客户详情', '拜访记录']
+    }
   },
   methods: {
     splitStr(str) {
